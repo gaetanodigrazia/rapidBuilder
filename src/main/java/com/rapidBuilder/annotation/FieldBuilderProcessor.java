@@ -1,4 +1,4 @@
-package com.builder.annotation;
+package com.rapidBuilder.annotation;
 
 import com.google.auto.service.AutoService;
 import freemarker.template.Configuration;

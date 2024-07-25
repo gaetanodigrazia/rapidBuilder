@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
-@SupportedAnnotationTypes("com.example.annotation.FieldBuilderProperty")
+@SupportedAnnotationTypes("com.rapidBuilder.annotation.FieldBuilderProperty")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
 public class FieldBuilderProcessor extends AbstractProcessor {

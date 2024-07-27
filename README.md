@@ -44,7 +44,7 @@ private String second;
 
     @Override
     public String toString() {
-        return "Animal{" +
+        return "Builder{" +
                 "first=" + first +
                 ", second='" + second + '\'' +
                 '}';

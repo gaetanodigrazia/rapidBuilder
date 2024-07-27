@@ -39,64 +39,58 @@ public class FieldBuilderProcessor extends AbstractProcessor {
     @Override
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment roundEnv) {
         for (TypeElement annotation : annotations) {
-            log.info("getting elements annotated with {}", annotation);
+            log.debug("getting elements annotated with {}", annotation);
             Set<? extends Element> annotatedElements =
-                roundEnv.getElementsAnnotatedWith(annotation);
+                    roundEnv.getElementsAnnotatedWith(annotation);
             log.info("...: {}", annotatedElements);
             Map<Element, ? extends List<? extends Element>> resultMap = annotatedElements.stream()
                     .collect(groupingBy(Element::getEnclosingElement));
-            resultMap.forEach((element, elements) -> System.out.println("elemente "+element+ " elemenntssss: "+elements));
+            resultMap.forEach((element, elements) -> System.out.println("elemente " + element + " elemenntssss: " + elements));
             for (Map.Entry<Element, ? extends List<? extends Element>> entry : resultMap.entrySet()) {
                 annotatedElements = new HashSet<>(entry.getValue());
-            annotatedElements.stream()
-                    .forEach(element ->
-                            log.info("ClassNameFound: {}", element
-                                    .getEnclosingElement().getSimpleName().toString()));
-            log.info("partitioning setter and non-setter methods");
-            Map<Boolean, List<Element>> annotatedMethods = annotatedElements.stream().collect(
-                Collectors.partitioningBy(
-                    element -> ((ExecutableType) element.asType()).getParameterTypes().size() == 1
-                        && element.getSimpleName().toString().startsWith("set")));
-            log.info("...: {}", annotatedElements);
+                annotatedElements.stream()
+                        .forEach(element ->
+                                log.info("ClassNameFound: {}", element
+                                        .getEnclosingElement().getSimpleName().toString()));
+                log.info("partitioning setter and non-setter methods");
+                Map<Boolean, List<Element>> annotatedMethods = annotatedElements.stream().collect(
+                        Collectors.partitioningBy(
+                                element -> ((ExecutableType) element.asType()).getParameterTypes().size() == 1
+                                        && element.getSimpleName().toString().startsWith("set")));
+                log.info("...: {}", annotatedElements);
 
-            List<Element> setters = annotatedMethods.get(true);
-            List<Element> builderTrue = new ArrayList<>();
-            List<Element> builderTrueRandomizeTrue = new ArrayList<>();
+                List<Element> setters = annotatedMethods.get(true);
+                List<Element> builderTrue = new ArrayList<>();
+                List<Element> builderTrueRandomizeTrue = new ArrayList<>();
 
-            for(Element setter: setters){
-                if(setter.getAnnotation(FieldBuilderProperty.class).builder()){
-                    builderTrue.add(setter);
+                for (Element setter : setters) {
+                    if (setter.getAnnotation(FieldBuilderProperty.class).builder()) {
+                        builderTrue.add(setter);
+                    }
                 }
-            }
-            for(Element whereBuilderIsTrue: builderTrue){
-                if(whereBuilderIsTrue.getAnnotation(FieldBuilderProperty.class).randomize()){
-                    builderTrueRandomizeTrue.add(whereBuilderIsTrue);
+                for (Element whereBuilderIsTrue : builderTrue) {
+                    if (whereBuilderIsTrue.getAnnotation(FieldBuilderProperty.class).randomize()) {
+                        builderTrueRandomizeTrue.add(whereBuilderIsTrue);
+                    }
                 }
-            }
 
-            List<Element> otherMethods = annotatedMethods.get(false);
+                List<Element> otherMethods = annotatedMethods.get(false);
 
-            log.info("notifying non-setter methods");
-            otherMethods.forEach(element -> processingEnv.getMessager()
-                .printMessage(Diagnostic.Kind.ERROR,
-                    "@FieldBuilderProperty must be applied to a setXxx method with a single argument",
-                    element));
+                log.info("notifying non-setter methods");
+                otherMethods.forEach(element -> processingEnv.getMessager()
+                        .printMessage(Diagnostic.Kind.ERROR,
+                                "@FieldBuilderProperty must be applied to a setXxx method with a single argument",
+                                element));
 
-            if (setters.isEmpty()) {
-                log.info("no setters, nothing to do");
-                continue;
-            }
+                if (setters.isEmpty()) {
+                    log.info("no setters, nothing to do");
+                    continue;
+                }
 
-            log.info("getting class name");
-            String className = entry.getKey().toString();
-            log.info("...: {}", className);
+                log.info("getting class name");
+                String className = entry.getKey().toString();
+                log.info("...: {}", className);
 
-/*            log.info("calculating setters map");
-            Map<String, String> setterMap = setters.stream().collect(
-                Collectors.toMap(setter -> setter.getSimpleName().toString(),
-                    setter -> ((ExecutableType) setter.asType()).getParameterTypes().get(0)
-                        .toString()));
-            log.info("...: {}", setterMap);*/
                 log.info("calculating setters map for builder");
                 Map<String, String> builderSetterMap = builderTrue.stream().collect(
                         Collectors.toMap(setter -> setter.getSimpleName().toString(),
@@ -109,12 +103,12 @@ public class FieldBuilderProcessor extends AbstractProcessor {
                                 setter -> ((ExecutableType) setter.asType()).getParameterTypes().get(0)
                                         .toString()));
                 log.info("...: {}", builderAndRandomize);
-            try {
-                writeBuilderFile(className, builderSetterMap);
-                writeRandomBuilderFile(className, builderAndRandomize);
-            } catch (Exception e) {
-                log.error("error", e);
-            }
+                try {
+                    writeBuilderFile(className, builderSetterMap);
+                    writeRandomBuilderFile(className, builderAndRandomize);
+                } catch (Exception e) {
+                    log.error("error", e);
+                }
             }
         }
 
@@ -122,7 +116,7 @@ public class FieldBuilderProcessor extends AbstractProcessor {
     }
 
     private void writeRandomBuilderFile(String className, Map<String, String> setterMap)
-        throws Exception {
+            throws Exception {
 
         log.info("creating a new Builder class for {} with setters {}", className, setterMap);
 
@@ -138,11 +132,11 @@ public class FieldBuilderProcessor extends AbstractProcessor {
 
         JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(builderClassName);
         List<FieldSpecification> fields = setterMap.entrySet()
-            .stream()
-            .map(e -> new FieldSpecification(e.getKey(), e.getValue()))
-            .toList();
+                .stream()
+                .map(e -> new FieldSpecification(e.getKey(), e.getValue()))
+                .toList();
         ClassSpecification classSpecification =
-            new ClassSpecification(packageName, simpleClassName, builderSimpleClassName, fields);
+                new ClassSpecification(packageName, simpleClassName, builderSimpleClassName, fields);
 
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             extractedForRandomizer(classSpecification, out);
@@ -150,7 +144,7 @@ public class FieldBuilderProcessor extends AbstractProcessor {
     }
 
     private void extractedForRandomizer(ClassSpecification classSpecification, PrintWriter out)
-        throws Exception {
+            throws Exception {
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_31);
         configuration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "");
         configuration.setDefaultEncoding("UTF-8");
@@ -163,8 +157,10 @@ public class FieldBuilderProcessor extends AbstractProcessor {
 
         Template template = configuration.getTemplate("RandomizerFromFields.ftl");
         template.process(freemarkerDataModel, out);
-    }    private void writeBuilderFile(String className, Map<String, String> setterMap)
-        throws Exception {
+    }
+
+    private void writeBuilderFile(String className, Map<String, String> setterMap)
+            throws Exception {
 
         log.info("creating a new Builder class for {} with setters {}", className, setterMap);
 
@@ -180,11 +176,11 @@ public class FieldBuilderProcessor extends AbstractProcessor {
 
         JavaFileObject builderFile = processingEnv.getFiler().createSourceFile(builderClassName);
         List<FieldSpecification> fields = setterMap.entrySet()
-            .stream()
-            .map(e -> new FieldSpecification(e.getKey(), e.getValue()))
-            .toList();
+                .stream()
+                .map(e -> new FieldSpecification(e.getKey(), e.getValue()))
+                .toList();
         ClassSpecification classSpecification =
-            new ClassSpecification(packageName, simpleClassName, builderSimpleClassName, fields);
+                new ClassSpecification(packageName, simpleClassName, builderSimpleClassName, fields);
 
         try (PrintWriter out = new PrintWriter(builderFile.openWriter())) {
             extracted(classSpecification, out);
@@ -192,7 +188,7 @@ public class FieldBuilderProcessor extends AbstractProcessor {
     }
 
     private void extracted(ClassSpecification classSpecification, PrintWriter out)
-        throws Exception {
+            throws Exception {
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_31);
         configuration.setClassLoaderForTemplateLoading(getClass().getClassLoader(), "");
         configuration.setDefaultEncoding("UTF-8");
@@ -208,17 +204,17 @@ public class FieldBuilderProcessor extends AbstractProcessor {
     }
 
     public record FieldSpecification(
-        String name,
-        String type
+            String name,
+            String type
     ) {
     }
 
 
     public record ClassSpecification(
-        String packageName,
-        String simpleClassName,
-        String builderSimpleClassName,
-        List<FieldSpecification> fields
+            String packageName,
+            String simpleClassName,
+            String builderSimpleClassName,
+            List<FieldSpecification> fields
     ) {
     }
 

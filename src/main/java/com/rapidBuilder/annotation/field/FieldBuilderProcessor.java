@@ -1,4 +1,4 @@
-package com.rapidBuilder.annotation;
+package com.rapidBuilder.annotation.field;
 
 import com.google.auto.service.AutoService;
 import freemarker.template.Configuration;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.groupingBy;
 
-@SupportedAnnotationTypes("com.rapidBuilder.annotation.FieldBuilderProperty")
+@SupportedAnnotationTypes("com.rapidBuilder.annotation.field.FieldBuilderProperty")
 @SupportedSourceVersion(SourceVersion.RELEASE_8)
 @AutoService(Processor.class)
 public class FieldBuilderProcessor extends AbstractProcessor {

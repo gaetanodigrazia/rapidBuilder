@@ -6,11 +6,9 @@
 
     <groupId>com.rapidBuilder</groupId>
     <artifactId>rapidbuilder</artifactId>
-    <version>1.0-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <modules>
-        <module>rapidBuilderTest</module>
-    </modules>
+    <version>1.2</version>
+    <packaging>jar</packaging>
+
 
 
     <properties>
